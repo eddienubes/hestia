@@ -11,7 +11,7 @@ const isValidIsoDate = (value: string): boolean => {
   );
 };
 
-const dateStringSchema = z
+export const dateStringSchema = z
   .string()
   .refine(isValidIsoDate, { message: "must be a valid date in YYYY-MM-DD format" });
 
