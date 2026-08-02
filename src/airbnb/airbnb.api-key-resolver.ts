@@ -2,7 +2,12 @@ import { join } from "node:path";
 import appDirs from "appdirsjs";
 import { AirbnbApiError, AirbnbTimeoutError } from "./airbnb.errors.ts";
 
-const useAppDirs = (appDirs as any).default as typeof appDirs;
+// appdirsjs is a CJS module (`exports.default = appDirs`); depending on the runtime's ESM/CJS
+// interop, `import appDirs from "appdirsjs"` may already unwrap to the function itself (as Bun
+// does) or may hand back the raw exports namespace with a `.default` property - handle both.
+const useAppDirs = (
+  typeof appDirs === "function" ? appDirs : (appDirs as any).default
+) as typeof appDirs;
 
 // Long-lived public API key that Airbnb's own web client sends as the
 // `X-Airbnb-Api-Key` header on search/details GraphQL requests, and that the
