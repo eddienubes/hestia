@@ -1,0 +1,61 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # write needed so the release step (elgohr/Github-Release-Action) can create the tag + release
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install mise
+        uses: jdx/mise-action@v4
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        run: bun test
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Format check
+        run: bun run format:check
+
+      - name: Build
+        run: bun run build
+
+      - name: Generate platform package manifests
+        run: bun run gen:platforms
+
+      - name: Build all 8 platform binaries
+        run: bun run build:platforms
+
+      - name: Publish platform packages, then the main package
+        run: bun run publish:platforms
+
+      - name: Determine release version
+        id: version
+        run: |
+          VERSION=$(npm pkg get version | tr -d '"')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: v${{ steps.version.outputs.version }}
+          tag: ${{ steps.version.outputs.tag }}
