@@ -20,6 +20,7 @@
     "format:check": "oxfmt --check"
   },
   "dependencies": {
+    "appdirsjs": "^1.2.8",
     "zod": "^4.4.3"
   },
   "devDependencies": {
