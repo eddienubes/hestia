@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
   buildListingUrl,
   buildRawParam,
+  decodeGlobalId,
   encodeGlobalId,
   HOTEL_ROOM_TAG,
   parseAvgRatingA11yLabel,
@@ -72,6 +73,20 @@ describe(encodeGlobalId.name, () => {
     expect(encodeGlobalId("DemandStayListing", "3367761")).toBe(
       "RGVtYW5kU3RheUxpc3Rpbmc6MzM2Nzc2MQ==",
     );
+  });
+});
+
+describe(decodeGlobalId.name, () => {
+  it("decodes a base64('TypeName:id') global id back into its parts", () => {
+    expect(decodeGlobalId("U3RheUxpc3Rpbmc6MzM2Nzc2MQ==")).toEqual({
+      typeName: "StayListing",
+      id: "3367761",
+    });
+  });
+
+  it("round-trips with encodeGlobalId", () => {
+    const encoded = encodeGlobalId("DemandStayListing", "3367761");
+    expect(decodeGlobalId(encoded)).toEqual({ typeName: "DemandStayListing", id: "3367761" });
   });
 });
 

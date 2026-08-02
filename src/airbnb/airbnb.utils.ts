@@ -71,6 +71,17 @@ export const encodeGlobalId = (typeName: string, id: string): string =>
   Buffer.from(`${typeName}:${id}`).toString("base64");
 
 /**
+ * Decodes a GraphQL global id produced by `encodeGlobalId` back into its `{ typeName, id }` parts,
+ * e.g. for pulling the plain numeric listing id out of a search result's
+ * `demandStayListing.id` (base64("DemandStayListing:<numericId>")).
+ */
+export const decodeGlobalId = (globalId: string): { typeName: string; id: string } => {
+  const decoded = Buffer.from(globalId, "base64").toString("utf-8");
+  const [typeName, id] = decoded.split(":");
+  return { typeName: typeName ?? "", id: id ?? "" };
+};
+
+/**
  * Parses Airbnb's `avgRatingA11yLabel` search-result field, e.g.
  * "4.94 out of 5 average rating,  17 reviews", into structured values. Search results don't expose
  * separate numeric rating/review-count fields - this a11y label is the only place both numbers
