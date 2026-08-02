@@ -11,6 +11,15 @@
     "type": "git",
     "url": "git+https://github.com/eddienubes/hestia.git"
   },
+  "bin": {
+    "hestia": "bin/hestia.exe"
+  },
+  "files": [
+    "bin",
+    "scripts/install.cjs",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "scripts": {
     "start": "bun run src/main.ts",
@@ -21,7 +30,8 @@
     "build": "bun build --compile --bytecode --minify --format esm --sourcemap --outfile dist/hestia ./src/main.ts",
     "build:platforms": "bun run scripts/build-platforms.ts",
     "gen:platforms": "bun run scripts/generate-platform-packages.ts",
-    "publish:platforms": "bun run scripts/publish-platforms.ts"
+    "publish:platforms": "bun run scripts/publish-platforms.ts",
+    "postinstall": "node scripts/install.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
@@ -33,5 +43,15 @@
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
     "typescript": "^7.0.2"
+  },
+  "optionalDependencies": {
+    "@hestia/mcp-darwin-arm64": "0.0.1",
+    "@hestia/mcp-darwin-x64": "0.0.1",
+    "@hestia/mcp-linux-arm64": "0.0.1",
+    "@hestia/mcp-linux-arm64-musl": "0.0.1",
+    "@hestia/mcp-linux-x64": "0.0.1",
+    "@hestia/mcp-linux-x64-musl": "0.0.1",
+    "@hestia/mcp-win32-arm64": "0.0.1",
+    "@hestia/mcp-win32-x64": "0.0.1"
   }
 }
