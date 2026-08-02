@@ -17,7 +17,11 @@
     "test": "bun test",
     "lint": "oxlint",
     "format": "oxfmt",
-    "format:check": "oxfmt --check"
+    "format:check": "oxfmt --check",
+    "build": "bun build --compile --bytecode --minify --format esm --sourcemap --outfile dist/hestia ./src/main.ts",
+    "build:platforms": "bun run scripts/build-platforms.ts",
+    "gen:platforms": "bun run scripts/generate-platform-packages.ts",
+    "publish:platforms": "bun run scripts/publish-platforms.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
