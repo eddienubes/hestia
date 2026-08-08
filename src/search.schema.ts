@@ -1,19 +1,25 @@
 import { z } from "zod";
-import { AMENITY_NAMES } from "./airbnb/airbnb.amenities.ts";
 import { todayIsoDate } from "./utils.ts";
+import { AMENITY_NAMES } from "./amenities.constants.ts";
 
 const isValidIsoDate = (value: string): boolean => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const [year, month, day] = value.split("-").map(Number) as [number, number, number];
+  const [year, month, day] = value.split("-").map(Number) as [
+    number,
+    number,
+    number,
+  ];
   const date = new Date(Date.UTC(year, month - 1, day));
   return (
-    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
   );
 };
 
-export const dateStringSchema = z
-  .string()
-  .refine(isValidIsoDate, { message: "must be a valid date in YYYY-MM-DD format" });
+export const dateStringSchema = z.string().refine(isValidIsoDate, {
+  message: "must be a valid date in YYYY-MM-DD format",
+});
 
 const amenitiesDescription = `Filter by amenities. Valid values: ${AMENITY_NAMES.join(", ")}.`;
 
@@ -22,7 +28,7 @@ const commonShape = {
     .string()
     .min(1)
     .describe(
-      "Free-text place to search (city, neighborhood, landmark, region), e.g. 'Lisbon, Portugal'. Airbnb resolves this server-side.",
+      "Free-text place to search (city, neighborhood, landmark, region), e.g. 'Lisbon, Portugal'.",
     ),
   placeId: z
     .string()
@@ -30,18 +36,48 @@ const commonShape = {
     .describe(
       "Optional Google Places ID if already known; usually unnecessary — prefer `location`.",
     ),
-  adults: z.number().int().min(1).default(1).describe("Number of adult guests."),
-  children: z.number().int().min(0).default(0).describe("Number of child guests."),
-  infants: z.number().int().min(0).default(0).describe("Number of infant guests."),
+  adults: z
+    .number()
+    .int()
+    .min(1)
+    .default(1)
+    .describe("Number of adult guests."),
+  children: z
+    .number()
+    .int()
+    .min(0)
+    .default(0)
+    .describe("Number of child guests."),
+  infants: z
+    .number()
+    .int()
+    .min(0)
+    .default(0)
+    .describe("Number of infant guests."),
   pets: z.number().int().min(0).default(0).describe("Number of pets."),
-  minPrice: z.number().min(0).optional().describe("Minimum nightly price filter, in `currency`."),
-  maxPrice: z.number().min(0).optional().describe("Maximum nightly price filter, in `currency`."),
-  currency: z.string().min(1).default("USD").describe("Currency code for prices, e.g. USD, EUR."),
+  minPrice: z
+    .number()
+    .min(0)
+    .optional()
+    .describe("Minimum nightly price filter, in `currency`."),
+  maxPrice: z
+    .number()
+    .min(0)
+    .optional()
+    .describe("Maximum nightly price filter, in `currency`."),
+  currency: z
+    .string()
+    .min(1)
+    .default("USD")
+    .describe("Currency code for prices, e.g. USD, EUR."),
   propertyType: z
     .enum(["entire_home", "private_room", "shared_room", "hotel_room"])
     .optional()
     .describe("Filter by property type."),
-  amenities: z.array(z.enum(AMENITY_NAMES)).optional().describe(amenitiesDescription),
+  amenities: z
+    .array(z.enum(AMENITY_NAMES))
+    .optional()
+    .describe(amenitiesDescription),
   limit: z
     .number()
     .int()
@@ -91,7 +127,9 @@ const flexibleSchema = z
       )
       .min(1)
       .max(12)
-      .describe("One or more target months to search within, e.g. ['october']."),
+      .describe(
+        "One or more target months to search within, e.g. ['october'].",
+      ),
     ...commonShape,
   })
   .strict();
@@ -129,6 +167,5 @@ const searchQuerySchema = z
     }
   });
 
-export const searchInputSchema = z.object({ query: searchQuerySchema });
-
-export type SearchInput = z.infer<typeof searchInputSchema>;
+export const SearchInputSchema = z.object({ query: searchQuerySchema });
+export type SearchInputSchema = z.infer<typeof SearchInputSchema>;

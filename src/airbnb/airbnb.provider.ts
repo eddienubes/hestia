@@ -6,7 +6,7 @@ import type {
   NormalizedSearchParams,
   NormalizedSearchResult,
 } from "../accommodation-search.provider.ts";
-import { AMENITIES } from "./airbnb.amenities.ts";
+import { AMENITIES_TO_AIRBNB_AMENITY_IDS } from "./airbnb.constants.ts";
 import type {
   AirbnbApiClient,
   AirbnbHost,
@@ -29,9 +29,7 @@ export class AirbnbProvider implements AccommodationSearchProvider {
   }
 
   async search(params: NormalizedSearchParams): Promise<NormalizedSearchResult> {
-    // Amenity names are already restricted to AMENITY_NAMES by the Zod schema at the MCP
-    // boundary, so an unresolvable name here would be an upstream bug - no defensive handling.
-    const amenityIds = params.amenities?.map((name) => AMENITIES[name as keyof typeof AMENITIES]);
+    const amenityIds = params.amenities?.map((name) => AMENITIES_TO_AIRBNB_AMENITY_IDS[name as keyof typeof AMENITIES_TO_AIRBNB_AMENITY_IDS]);
 
     const searchParams: AirbnbSearchParams = {
       location: params.location,

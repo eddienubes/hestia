@@ -1,5 +1,9 @@
 import type { AirbnbApiKeyResolver } from "./airbnb.api-key-resolver.ts";
-import { AirbnbApiError, AirbnbListingNotFoundError, AirbnbTimeoutError } from "./airbnb.errors.ts";
+import {
+  AirbnbApiError,
+  AirbnbListingNotFoundError,
+  AirbnbTimeoutError,
+} from "./airbnb.errors.ts";
 import {
   buildRawParam,
   encodeGlobalId,
@@ -150,18 +154,12 @@ const PDP_CONTENT_SECTION_IDS = [
 ];
 
 /** Narrowed down to what this file actually calls, matching the pattern in airbnb.api-key-resolver.ts. */
-export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+export type FetchLike = typeof fetch;
 
 export interface AirbnbApiClientOptions {
-  /** Overrides the global `fetch` used for all requests - mainly for tests. */
   fetchImpl?: FetchLike;
-  /** Per-request timeout in milliseconds. */
   timeoutMs?: number;
 }
-
-// ---------------------------------------------------------------------------
-// Search: upstream request/response shapes
-// ---------------------------------------------------------------------------
 
 /**
  * Upstream-shaped search request params. Close to (but distinct from) the domain's
@@ -222,11 +220,15 @@ export interface AirbnbSearchResult {
   avgRatingA11yLabel?: string | null;
   badges: AirbnbSearchResultBadge[];
   contextualPictures: AirbnbImage[];
-  structuredDisplayPrice?: { primaryLine?: AirbnbSearchResultPriceLine | null } | null;
+  structuredDisplayPrice?: {
+    primaryLine?: AirbnbSearchResultPriceLine | null;
+  } | null;
   demandStayListing?: {
     /** base64("DemandStayListing:<numericListingId>") - decode to get the plain listing id. */
     id: string;
-    location?: { coordinate?: { latitude: number; longitude: number } | null } | null;
+    location?: {
+      coordinate?: { latitude: number; longitude: number } | null;
+    } | null;
   } | null;
 }
 
@@ -291,7 +293,10 @@ export interface AirbnbListingDetailsResponse {
       } | null;
     } | null;
   };
-  errors?: Array<{ message: string; extensions?: AirbnbListingDetailsErrorExtensions }>;
+  errors?: Array<{
+    message: string;
+    extensions?: AirbnbListingDetailsErrorExtensions;
+  }>;
 }
 
 export interface AirbnbAmenity {
@@ -347,16 +352,15 @@ export interface AirbnbListingDetails {
   rating: { value: number | null; reviewCount: number };
 }
 
-// ---------------------------------------------------------------------------
-// Client
-// ---------------------------------------------------------------------------
-
 export class AirbnbApiClient {
   private readonly keyResolver: AirbnbApiKeyResolver;
   private readonly fetchImpl: FetchLike;
   private readonly timeoutMs: number;
 
-  constructor(keyResolver: AirbnbApiKeyResolver, options: AirbnbApiClientOptions = {}) {
+  constructor(
+    keyResolver: AirbnbApiKeyResolver,
+    options: AirbnbApiClientOptions = {},
+  ) {
     this.keyResolver = keyResolver;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -395,7 +399,11 @@ export class AirbnbApiClient {
     return this.assembleListingDetails(id, sections);
   }
 
-  private async request(url: string, body: unknown, operationName: string): Promise<unknown> {
+  private async request(
+    url: string,
+    body: unknown,
+    operationName: string,
+  ): Promise<unknown> {
     const attempt = async (apiKey: string): Promise<Response> => {
       try {
         return await this.fetchImpl(url, {
@@ -430,7 +438,9 @@ export class AirbnbApiClient {
     }
 
     if (!response.ok) {
-      throw new AirbnbApiError(`${operationName} returned HTTP ${response.status}.`);
+      throw new AirbnbApiError(
+        `${operationName} returned HTTP ${response.status}.`,
+      );
     }
 
     try {
@@ -464,7 +474,8 @@ export class AirbnbApiClient {
       buildRawParam("version", "1.8.8"),
     ];
 
-    if (params.placeId) rawParams.push(buildRawParam("placeId", params.placeId));
+    if (params.placeId)
+      rawParams.push(buildRawParam("placeId", params.placeId));
     if (params.minPrice !== undefined) {
       rawParams.push(buildRawParam("priceMin", String(params.minPrice)));
     }
@@ -472,25 +483,35 @@ export class AirbnbApiClient {
       rawParams.push(buildRawParam("priceMax", String(params.maxPrice)));
     }
     if (params.amenityIds?.length) {
-      rawParams.push(buildRawParam("amenities", ...params.amenityIds.map(String)));
+      rawParams.push(
+        buildRawParam("amenities", ...params.amenityIds.map(String)),
+      );
     }
 
     if (params.propertyType === "hotel_room") {
       rawParams.push(buildRawParam("kgAndTags", HOTEL_ROOM_TAG));
     } else if (params.propertyType) {
       rawParams.push(
-        buildRawParam("roomTypes", propertyTypeToRoomTypeWireValue(params.propertyType)),
+        buildRawParam(
+          "roomTypes",
+          propertyTypeToRoomTypeWireValue(params.propertyType),
+        ),
       );
     }
 
     if (params.dateMode === "exact") {
-      if (params.checkin) rawParams.push(buildRawParam("checkin", params.checkin));
-      if (params.checkout) rawParams.push(buildRawParam("checkout", params.checkout));
+      if (params.checkin)
+        rawParams.push(buildRawParam("checkin", params.checkin));
+      if (params.checkout)
+        rawParams.push(buildRawParam("checkout", params.checkout));
     } else {
       rawParams.push(buildRawParam("datePickerType", "flexible_dates"));
       if (params.flexibleTripLength) {
         rawParams.push(
-          buildRawParam("flexibleTripLengths", tripLengthToWireValue(params.flexibleTripLength)),
+          buildRawParam(
+            "flexibleTripLengths",
+            tripLengthToWireValue(params.flexibleTripLength),
+          ),
         );
       }
       // Live-verified for "weekend"/"week": selecting target months sets `flexibleTripDates`.
@@ -499,7 +520,9 @@ export class AirbnbApiClient {
       // monthly-specific params aren't required for correct results, so sending
       // `flexibleTripDates` uniformly across all three trip lengths is expected to be harmless.
       if (params.flexibleMonths?.length) {
-        rawParams.push(buildRawParam("flexibleTripDates", ...params.flexibleMonths));
+        rawParams.push(
+          buildRawParam("flexibleTripDates", ...params.flexibleMonths),
+        );
       }
     }
 
@@ -511,7 +534,10 @@ export class AirbnbApiClient {
       treatmentFlags: STAYS_SEARCH_TREATMENT_FLAGS,
     };
 
-    const itemsPerGridParam = buildRawParam("itemsPerGrid", String(params.limit));
+    const itemsPerGridParam = buildRawParam(
+      "itemsPerGrid",
+      String(params.limit),
+    );
 
     return {
       operationName: "StaysSearch",
@@ -530,11 +556,16 @@ export class AirbnbApiClient {
         isLeanTreatment: false,
         aiSearchEnabled: false,
       },
-      extensions: { persistedQuery: { version: 1, sha256Hash: STAYS_SEARCH_PERSISTED_HASH } },
+      extensions: {
+        persistedQuery: { version: 1, sha256Hash: STAYS_SEARCH_PERSISTED_HASH },
+      },
     };
   }
 
-  private buildListingDetailsBody(id: string, params: AirbnbListingDetailsParams): unknown {
+  private buildListingDetailsBody(
+    id: string,
+    params: AirbnbListingDetailsParams,
+  ): unknown {
     return {
       operationName: "StaysPdpSections",
       variables: {
@@ -553,26 +584,42 @@ export class AirbnbApiClient {
         ...PDP_SECTIONS_INCLUDE_FLAGS,
       },
       extensions: {
-        persistedQuery: { version: 1, sha256Hash: STAYS_PDP_SECTIONS_PERSISTED_HASH },
+        persistedQuery: {
+          version: 1,
+          sha256Hash: STAYS_PDP_SECTIONS_PERSISTED_HASH,
+        },
       },
     };
   }
 
-  private assembleListingDetails(id: string, sections: AirbnbPdpSections): AirbnbListingDetails {
-    const bySectionId = new Map(sections.sections.map((s) => [s.sectionId, s.section]));
-    const sbuiSections = sections.sbuiData?.sectionConfiguration?.root?.sections ?? [];
-    const sbuiBySectionId = new Map(sbuiSections.map((s) => [s.sectionId, s.sectionData]));
+  private assembleListingDetails(
+    id: string,
+    sections: AirbnbPdpSections,
+  ): AirbnbListingDetails {
+    const bySectionId = new Map(
+      sections.sections.map((s) => [s.sectionId, s.section]),
+    );
+    const sbuiSections =
+      sections.sbuiData?.sectionConfiguration?.root?.sections ?? [];
+    const sbuiBySectionId = new Map(
+      sbuiSections.map((s) => [s.sectionId, s.sectionData]),
+    );
 
-    const title = (bySectionId.get("TITLE_DEFAULT")?.title as string | undefined) ?? "";
+    const title =
+      (bySectionId.get("TITLE_DEFAULT")?.title as string | undefined) ?? "";
     const description = bySectionId.get("DESCRIPTION_DEFAULT");
-    const htmlDescription = description?.htmlDescription as { htmlText?: string } | undefined;
+    const htmlDescription = description?.htmlDescription as
+      | { htmlText?: string }
+      | undefined;
 
     const hero = bySectionId.get("HERO_DEFAULT");
     const images = (hero?.previewImages as AirbnbImage[] | undefined) ?? [];
 
     const overview = sbuiBySectionId.get("OVERVIEW_DEFAULT_V2");
     const overviewTitle = overview?.title as string | undefined;
-    const overviewItems = ((overview?.overviewItems as Array<{ title?: string }> | undefined) ?? [])
+    const overviewItems = (
+      (overview?.overviewItems as Array<{ title?: string }> | undefined) ?? []
+    )
       .map((item) => item.title)
       .filter((t): t is string => Boolean(t));
 
@@ -584,8 +631,12 @@ export class AirbnbApiClient {
 
     const amenitiesSection = bySectionId.get("AMENITIES_DEFAULT");
     const amenities =
-      (amenitiesSection?.seeAllAmenitiesGroups as AirbnbAmenitiesGroup[] | undefined) ??
-      (amenitiesSection?.previewAmenitiesGroups as AirbnbAmenitiesGroup[] | undefined) ??
+      (amenitiesSection?.seeAllAmenitiesGroups as
+        | AirbnbAmenitiesGroup[]
+        | undefined) ??
+      (amenitiesSection?.previewAmenitiesGroups as
+        | AirbnbAmenitiesGroup[]
+        | undefined) ??
       [];
 
     const hostCard = bySectionId.get("MEET_YOUR_HOST")?.cardData as
@@ -605,11 +656,15 @@ export class AirbnbApiClient {
       | undefined;
 
     const policies = bySectionId.get("POLICIES_DEFAULT");
-    const houseRules = ((policies?.houseRules as Array<{ title?: string }> | undefined) ?? [])
+    const houseRules = (
+      (policies?.houseRules as Array<{ title?: string }> | undefined) ?? []
+    )
       .map((r) => r.title)
       .filter((t): t is string => Boolean(t));
     const safetyAndProperty = (
-      (policies?.previewSafetyAndProperties as Array<{ title?: string }> | undefined) ?? []
+      (policies?.previewSafetyAndProperties as
+        | Array<{ title?: string }>
+        | undefined) ?? []
     )
       .map((r) => r.title)
       .filter((t): t is string => Boolean(t));
@@ -640,7 +695,11 @@ export class AirbnbApiClient {
         : undefined,
       location:
         locationSection?.lat !== undefined && locationSection?.lng !== undefined
-          ? { lat: locationSection.lat, lng: locationSection.lng, label: locationSection.subtitle }
+          ? {
+              lat: locationSection.lat,
+              lng: locationSection.lng,
+              label: locationSection.subtitle,
+            }
           : undefined,
       houseRules,
       safetyAndProperty,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { searchInputSchema } from "./search.schema.ts";
+import { SearchInputSchema } from "./search.schema.ts";
 
 const futureDate = (daysFromNow: number): string => {
   const date = new Date();
@@ -9,7 +9,7 @@ const futureDate = (daysFromNow: number): string => {
 
 describe("searchInputSchema — valid shapes", () => {
   it("should accept a minimal exact-mode search and apply defaults", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -29,7 +29,7 @@ describe("searchInputSchema — valid shapes", () => {
   });
 
   it("should accept a minimal flexible-mode search and apply defaults", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "flexible",
         location: "Lisbon, Portugal",
@@ -46,7 +46,7 @@ describe("searchInputSchema — valid shapes", () => {
   });
 
   it("should accept a fully specified exact-mode search", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -72,7 +72,7 @@ describe("searchInputSchema — valid shapes", () => {
 
 describe("searchInputSchema — rejects invalid shapes", () => {
   it("should reject a checkin date in the past", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -84,7 +84,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject checkout equal to checkin", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -96,7 +96,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject checkout before checkin", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -108,7 +108,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject minPrice greater than maxPrice in exact mode", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -122,7 +122,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject minPrice greater than maxPrice in flexible mode", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "flexible",
         location: "Lisbon, Portugal",
@@ -136,7 +136,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject an unknown propertyType", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -149,7 +149,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject an amenity not in the known vocabulary", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -162,7 +162,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject an empty flexibleMonths array", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "flexible",
         location: "Lisbon, Portugal",
@@ -174,7 +174,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject an invalid date format", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -186,7 +186,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject an invalid calendar date", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -198,7 +198,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject a limit above the hard cap of 50", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
@@ -211,7 +211,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject an empty location", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "",
@@ -223,7 +223,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject a missing dateMode", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         location: "Lisbon, Portugal",
         checkin: futureDate(10),
@@ -234,7 +234,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject dateMode 'flexible' payload that mixes in exact-mode fields (checkin)", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "flexible",
         location: "Lisbon, Portugal",
@@ -247,7 +247,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
   });
 
   it("should reject dateMode 'exact' payload that mixes in flexible-mode fields (flexibleMonths)", () => {
-    const result = searchInputSchema.safeParse({
+    const result = SearchInputSchema.safeParse({
       query: {
         dateMode: "exact",
         location: "Lisbon, Portugal",
